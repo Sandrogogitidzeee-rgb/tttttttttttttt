@@ -1191,9 +1191,39 @@ async def main():
     log.info(f"Session finished {Fore.LIGHTBLACK_EX}›{Style.RESET_ALL} All server join tasks completed or tokens exhausted!")
     log.info(f"Discord Bot & Dashboard {Fore.LIGHTBLACK_EX}›{Style.RESET_ALL} 24/7 online. Use /addtokens or /addinvites, then /restart to resume.")
 
-    # Keep the main process alive so the Discord bot and Web Dashboard stay active
+    # Keep the dashboard alive and restart the engine when new dashboard input
+    # arrives after a completed or exhausted run.
+    def input_signature(path):
+        if not path.exists():
+            return (0, 0)
+        stat = path.stat()
+        return (stat.st_mtime_ns, stat.st_size)
+
+    input_signatures = {
+        path: input_signature(path)
+        for path in (tokens_file, invites_file)
+    }
     while True:
-        await asyncio.sleep(3600)
+        await asyncio.sleep(2)
+        current_signatures = {
+            path: input_signature(path)
+            for path in (tokens_file, invites_file)
+        }
+        changed = any(
+            current_signatures[path] != input_signatures[path]
+            for path in input_signatures
+        )
+        if changed:
+            has_tokens = tokens_file.exists() and any(
+                line.strip() for line in tokens_file.read_text(encoding="utf-8").splitlines()
+            )
+            has_invites = invites_file.exists() and any(
+                line.strip() for line in invites_file.read_text(encoding="utf-8").splitlines()
+            )
+            if has_tokens and has_invites:
+                log.info("New dashboard queues detected; restarting the engine.")
+                os.execv(sys.executable, [sys.executable] + sys.argv)
+            input_signatures = current_signatures
 
 if __name__ == "__main__":
     try:
