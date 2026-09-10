@@ -309,6 +309,19 @@ def captcha_skip_disabled(status: str | None) -> str:
         return "failed"
     return status
 
+
+def normalize_join_status(status):
+    """Ensure the dispatcher never silently requeues an unknown result."""
+    status = captcha_skip_disabled(status)
+    known_statuses = {
+        "Already Member", "invalid_invite", "min_members_limit", "Joined",
+        "Joined_Captcha_Exhausted", "failed", "invalid", "locked", "limited",
+        "quarantined", "action_blocked",
+    }
+    if status not in known_statuses:
+        return "failed"
+    return status
+
 async def remove_invite_from_file(invite_code: str):
     async with file_lock:
         invites_file = Path("input/invites.txt")
@@ -1057,7 +1070,12 @@ async def main():
                         push_token_core_log(f"T{worker.id}: join crashed ({type(e).__name__}) - invite requeued", "error")
                         status = "failed"
 
-                    status = captcha_skip_disabled(status)
+                    status = normalize_join_status(status)
+                    if status == "failed":
+                        log.warning(
+                            f"T{worker.id} Join returned no usable result for invite={invite}; "
+                            "recording one failed attempt and continuing."
+                        )
 
                     if status == "Already Member":
                         # Server already joined globally: remove invite across all tokens and immediately take next invite for this worker!
