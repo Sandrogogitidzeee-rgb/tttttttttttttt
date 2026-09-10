@@ -177,12 +177,12 @@ def check_structure():
     "enabled": false
   },
   "join_engine_mode": "fleet",
-  "token_join_limit": 33,
+  "token_join_limit": 5,
   "min_dispatcher_delay": 39,
   "max_dispatcher_delay": 55,
   "captcha_timeout": 120,
   "threads": 2,
-  "max_guild_limit": 99,
+  "max_guild_limit": 8,
   "min_member_count": 100,
   "min_join_delay": 440,
   "max_join_delay": 520,
@@ -211,7 +211,9 @@ def check_structure():
   "remove_captcha_invites": true,
   "admin_user_ids": [],
   "license_key": "",
-  "workers_per_thread": 10
+  "workers_per_thread": 10,
+  "token_failure_threshold": 2,
+  "token_failure_cooldown_seconds": 1800
 }"""
 
     required_files = {
@@ -513,6 +515,8 @@ async def main():
     STATS["total_invites"] = len(invites)
     STATS["max_guild_limit"] = max_guild_limit
     token_last_use_time = {}
+    token_failure_counts = {}
+    token_failure_cooldown = {}
     current_token_index = 0
     token_proxies = {}
     
@@ -590,6 +594,9 @@ async def main():
                                 continue
                             if t in tokens_in_use:
                                 continue
+                            cooldown_until = token_failure_cooldown.get(t, 0)
+                            if cooldown_until and current_time < cooldown_until:
+                                continue
                             if current_time - token_last_use_time.get(t, 0) < 300.0:
                                 continue
                             joins = len(guilds_db.get(t, []))
@@ -608,6 +615,9 @@ async def main():
                     else:
                         for t in active_tokens:
                             if t in exhausted_tokens or t in tokens_in_use:
+                                continue
+                            cooldown_until = token_failure_cooldown.get(t, 0)
+                            if cooldown_until and time.time() < cooldown_until:
                                 continue
                             joins = len(guilds_db.get(t, []))
                             if joins >= max_guild_limit:
@@ -707,14 +717,22 @@ async def main():
                 if status in ("invalid", "locked", "Joined_Captcha_Exhausted", "limited"):
                     if status in ("invalid", "locked", "limited"):
                         STATS["invalid"] = int(STATS.get("invalid", 0)) + 1
-                    await remove_token_from_file(token)
-                    async with token_lock:
-                        exhausted_tokens.add(token)
-                        if token in active_tokens:
-                            active_tokens.remove(token)
-                            STATS["active_tokens"] = len(active_tokens)
-                            token_proxies.pop(token, None)
-                            log.warning(f"Token pool updated {Fore.LIGHTBLACK_EX}›{Style.RESET_ALL} token={Fore.CYAN}{token[:4]}...{token[-4:]}{Style.RESET_ALL} status={Fore.LIGHTYELLOW_EX}{status}{Style.RESET_ALL} (quarantined/removed)")
+                    failure_threshold = int(config.get("token_failure_threshold", 2) or 2)
+                    failure_cooldown = float(config.get("token_failure_cooldown_seconds", 1800) or 1800)
+                    token_failure_counts[token] = token_failure_counts.get(token, 0) + 1
+                    token_failure_cooldown[token] = time.time() + failure_cooldown
+                    if token_failure_counts[token] >= failure_threshold:
+                        await remove_token_from_file(token)
+                        async with token_lock:
+                            exhausted_tokens.add(token)
+                            if token in active_tokens:
+                                active_tokens.remove(token)
+                                STATS["active_tokens"] = len(active_tokens)
+                                token_proxies.pop(token, None)
+                                log.warning(f"Token pool updated {Fore.LIGHTBLACK_EX}›{Style.RESET_ALL} token={Fore.CYAN}{token[:4]}...{token[-4:]}{Style.RESET_ALL} status={Fore.LIGHTYELLOW_EX}{status}{Style.RESET_ALL} (failure threshold reached; quarantined/removed)")
+                        continue
+                    else:
+                        log.warning(f"Token cooldown triggered {Fore.LIGHTBLACK_EX}›{Style.RESET_ALL} token={Fore.CYAN}{token[:4]}...{token[-4:]}{Style.RESET_ALL} failures={token_failure_counts[token]}/{failure_threshold} (cooldown {failure_cooldown/60:.1f}m)")
 
                 # If join failed or skipped, free placeholder slot and re-queue invite if needed
                 if status in ("invalid", "locked", "limited", "captcha_skip", "min_members_limit", "failed", "action_blocked"):
@@ -1023,9 +1041,28 @@ async def main():
 
                     elif status == "Captcha Timeout":
                         STATS["captcha_fails"] = int(STATS.get("captcha_fails", 0)) + 1
+                        failure_threshold = int(config.get("token_failure_threshold", 2) or 2)
+                        failure_cooldown = float(config.get("token_failure_cooldown_seconds", 1800) or 1800)
+                        token_failure_counts[worker.token] = token_failure_counts.get(worker.token, 0) + 1
+                        token_failure_cooldown[worker.token] = time.time() + failure_cooldown
                         worker.status = "Captcha Timeout"
                         set_worker_state(worker.id, status="Captcha Timeout")
                         push_token_core_log(f"T{worker.id}: Captcha timeout invite={invite}", "captcha")
+                        if token_failure_counts[worker.token] >= failure_threshold:
+                            await remove_token_from_file(worker.token)
+                            await move_token_to_captchaed(worker.token)
+                            if standby_tokens:
+                                new_tok = standby_tokens.pop(0)
+                                worker.token = new_tok
+                                worker.joins = 0
+                                worker.proxy = proxy_pool[worker.thread_id] if proxy_pool else None
+                                worker.proxy_token = new_tok
+                                worker.status = "Standby Active"
+                                set_worker_state(worker.id, token=worker.token, joins=0, status="Standby Active")
+                            else:
+                                worker.retired = True
+                                worker.status = "Retired"
+                                set_worker_state(worker.id, status="Retired")
                         await requeue_or_drop_invite(invites_to_process, invite_attempts, worker,
                                                      invite, status, MAX_INVITE_ATTEMPTS,
                                                      lock=invite_lock)
@@ -1037,8 +1074,27 @@ async def main():
                         # turn on a captcha-gated server, then move this token on.
                         # Set remove_captcha_invites=false to re-queue instead.
                         STATS["captcha_fails"] = int(STATS.get("captcha_fails", 0)) + 1
+                        failure_threshold = int(config.get("token_failure_threshold", 2) or 2)
+                        failure_cooldown = float(config.get("token_failure_cooldown_seconds", 1800) or 1800)
+                        token_failure_counts[worker.token] = token_failure_counts.get(worker.token, 0) + 1
+                        token_failure_cooldown[worker.token] = time.time() + failure_cooldown
                         worker.status = "Captcha"
                         set_worker_state(worker.id, status="Captcha")
+                        if token_failure_counts[worker.token] >= failure_threshold:
+                            await remove_token_from_file(worker.token)
+                            await move_token_to_captchaed(worker.token)
+                            if standby_tokens:
+                                new_tok = standby_tokens.pop(0)
+                                worker.token = new_tok
+                                worker.joins = 0
+                                worker.proxy = proxy_pool[worker.thread_id] if proxy_pool else None
+                                worker.proxy_token = new_tok
+                                worker.status = "Standby Active"
+                                set_worker_state(worker.id, token=worker.token, joins=0, status="Standby Active")
+                            else:
+                                worker.retired = True
+                                worker.status = "Retired"
+                                set_worker_state(worker.id, status="Retired")
                         if config.get("remove_captcha_invites", True):
                             push_token_core_log(f"T{worker.id}: Captcha on invite - dropping invite", "captcha")
                             if invite in invite_attempts:
@@ -1058,6 +1114,10 @@ async def main():
                         # token is the one thing that never comes back. The invite
                         # is dropped too (it was captcha-gated for this token).
                         STATS["captcha_fails"] = int(STATS.get("captcha_fails", 0)) + 1
+                        failure_threshold = int(config.get("token_failure_threshold", 2) or 2)
+                        failure_cooldown = float(config.get("token_failure_cooldown_seconds", 1800) or 1800)
+                        token_failure_counts[worker.token] = token_failure_counts.get(worker.token, 0) + 1
+                        token_failure_cooldown[worker.token] = time.time() + failure_cooldown
                         tokens_retired_count += 1
                         worker.status = "Captcha Retired"
                         set_worker_state(worker.id, status="Captcha Retired")
