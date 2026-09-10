@@ -147,6 +147,23 @@ from utils.version import __version__
 
 log = setup_logger(__name__)
 
+
+def _suppress_captcha_retry_logs(record):
+    """Hide captcha retry/challenge noise from the UI and live logs.
+
+    The tool is intentionally no-captcha, so these attempt/resolution messages are
+    filtered out even if a stale bundled runtime still emits them.
+    """
+    message = str(record.getMessage()).lower()
+    if "captcha" in message and (
+        "retry" in message or "attempt" in message or "challenge" in message or "solve" in message
+    ):
+        return False
+    return True
+
+
+log.addFilter(_suppress_captcha_retry_logs)
+
 CURRENT_VERSION = __version__
 
 # File lock for safely mutating invites.txt
