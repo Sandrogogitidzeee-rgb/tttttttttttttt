@@ -577,6 +577,7 @@ async def main():
     token_last_use_time = {}
     token_failure_counts = {}
     token_failure_cooldown = {}
+    invalid_token_ids = set()
     current_token_index = 0
     token_proxies = {}
     
@@ -775,8 +776,18 @@ async def main():
                     await remove_invite_from_file(invite)
 
                 if status in ("invalid", "locked", "Joined_Captcha_Exhausted", "limited"):
-                    if status in ("invalid", "locked", "limited"):
+                    if status in ("invalid", "locked", "limited") and token not in invalid_token_ids:
+                        invalid_token_ids.add(token)
                         STATS["invalid"] = int(STATS.get("invalid", 0)) + 1
+                    if status == "invalid":
+                        await remove_token_from_file(token)
+                        async with token_lock:
+                            exhausted_tokens.add(token)
+                            if token in active_tokens:
+                                active_tokens.remove(token)
+                                STATS["active_tokens"] = len(active_tokens)
+                                token_proxies.pop(token, None)
+                        continue
                     failure_threshold = int(config.get("token_failure_threshold", 2) or 2)
                     failure_cooldown = float(config.get("token_failure_cooldown_seconds", 1800) or 1800)
                     token_failure_counts[token] = token_failure_counts.get(token, 0) + 1
@@ -1105,7 +1116,6 @@ async def main():
                         # No-captcha mode: treat any legacy captcha response as an ordinary
                         # failed attempt and continue to the next invite without solver or
                         # captcha-specific handling.
-                        STATS["invalid"] = int(STATS.get("invalid", 0)) + 1
                         worker.status = "failed"
                         set_worker_state(worker.id, status="failed")
                         push_token_core_log(f"T{worker.id}: invite failed without captcha handling", "error")
@@ -1115,7 +1125,9 @@ async def main():
                         turn_completed = True
 
                     elif status in ("invalid", "locked", "limited", "quarantined", "action_blocked"):
-                        STATS["invalid"] = int(STATS.get("invalid", 0)) + 1
+                        if worker.token not in invalid_token_ids:
+                            invalid_token_ids.add(worker.token)
+                            STATS["invalid"] = int(STATS.get("invalid", 0)) + 1
                         tokens_retired_count += 1
                         worker.status = status
                         set_worker_state(worker.id, status=status)
