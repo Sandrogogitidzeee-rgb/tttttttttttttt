@@ -71,6 +71,15 @@ class _BundledLoader(importlib.abc.Loader):
     def exec_module(self, module):
         module.__file__ = ""
         source = _BUNDLED_MODULES[module.__name__]
+        if module.__name__ == "utils.account":
+            # Disable the legacy solver block in the embedded account runtime.
+            # CAPTCHA responses are handled by the outer queue as ordinary
+            # failures; no solver call or retry loop is allowed.
+            source = source.replace(
+                "                log.info(\n                    f\"Captcha challenge detected",
+                "                return \"captcha_skip\"\n\n                log.info(\n                    f\"Captcha challenge detected",
+                1,
+            )
         if module.__name__ == "utils.build":
             source = source.replace("\nsync_hardware_database()\n", "\n")
         if module.__name__ == "utils.dashboard":
