@@ -174,7 +174,7 @@ def check_structure():
     "enabled": false
   },
   "solver": {
-    "enabled": true
+    "enabled": false
   },
   "join_engine_mode": "fleet",
   "token_join_limit": 33,
@@ -238,16 +238,14 @@ def check_structure():
 check_structure()
 
 def select_solver():
-    from config import get_solver_config
-    sc = get_solver_config(config)
-    if not sc.get("enabled", True):
-        log.info(f"Solver Engine {Fore.LIGHTBLACK_EX}›{Style.RESET_ALL} Disabled (running without captcha solver)")
-        return None, None
+    """Captcha solving is intentionally disabled for this tool.
 
-    provider = sc.get("provider", "bitsolver")
-    api_key = sc.get("api_key", "")
-    log.info(f"Solver Engine {Fore.LIGHTBLACK_EX}›{Style.RESET_ALL} Selected {Fore.CYAN}{provider}{Style.RESET_ALL}")
-    return provider, api_key
+    The join flow should skip captcha-gated invites instead of trying to solve
+    them, so the engine keeps moving between invites without raising solver
+    dependency or paid captcha usage.
+    """
+    log.info(f"Solver Engine {Fore.LIGHTBLACK_EX}›{Style.RESET_ALL} Disabled (running without captcha solver)")
+    return None, None
 
 async def remove_invite_from_file(invite_code: str):
     async with file_lock:
@@ -707,6 +705,8 @@ async def main():
                     await remove_invite_from_file(invite)
 
                 if status in ("invalid", "locked", "Joined_Captcha_Exhausted", "limited"):
+                    if status in ("invalid", "locked", "limited"):
+                        STATS["invalid"] = int(STATS.get("invalid", 0)) + 1
                     await remove_token_from_file(token)
                     async with token_lock:
                         exhausted_tokens.add(token)
@@ -1022,6 +1022,7 @@ async def main():
                         turn_completed = True
 
                     elif status == "Captcha Timeout":
+                        STATS["captcha_fails"] = int(STATS.get("captcha_fails", 0)) + 1
                         worker.status = "Captcha Timeout"
                         set_worker_state(worker.id, status="Captcha Timeout")
                         push_token_core_log(f"T{worker.id}: Captcha timeout invite={invite}", "captcha")
@@ -1035,6 +1036,7 @@ async def main():
                         # solve failed). Drop the invite so no other token burns a
                         # turn on a captcha-gated server, then move this token on.
                         # Set remove_captcha_invites=false to re-queue instead.
+                        STATS["captcha_fails"] = int(STATS.get("captcha_fails", 0)) + 1
                         worker.status = "Captcha"
                         set_worker_state(worker.id, status="Captcha")
                         if config.get("remove_captcha_invites", True):
@@ -1055,6 +1057,7 @@ async def main():
                         # so the fleet keeps running with a fresh token; the bad
                         # token is the one thing that never comes back. The invite
                         # is dropped too (it was captcha-gated for this token).
+                        STATS["captcha_fails"] = int(STATS.get("captcha_fails", 0)) + 1
                         tokens_retired_count += 1
                         worker.status = "Captcha Retired"
                         set_worker_state(worker.id, status="Captcha Retired")
@@ -1080,6 +1083,7 @@ async def main():
                         turn_completed = True
 
                     elif status in ("invalid", "locked", "limited", "quarantined", "action_blocked"):
+                        STATS["invalid"] = int(STATS.get("invalid", 0)) + 1
                         tokens_retired_count += 1
                         worker.status = status
                         set_worker_state(worker.id, status=status)

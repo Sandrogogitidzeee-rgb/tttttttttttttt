@@ -9,3 +9,86 @@
 2026-09-10 00:15:43 │ INFO  │ Dashboard Web › Listening on http://0.0.0.0:5065
 2026-09-10 00:15:53 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5065
 2026-09-10 00:16:03 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5065
+2026-09-10 10:12:36 │ INFO  │ Dashboard Web › Listening on http://127.0.0.1:5050
+ort 5050
+2026-09-10 10:12:46 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:12:56 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:13:06 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:13:16 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:13:26 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:13:36 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:13:46 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:13:57 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:14:07 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:14:17 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:14:27 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:14:37 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:14:47 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:14:57 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:15:07 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:15:17 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:15:27 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:15:37 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:15:47 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:15:57 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:16:08 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:16:18 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:16:28 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:16:38 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:16:48 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:16:58 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:17:08 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:17:18 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:17:28 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:17:38 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:17:48 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:17:58 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:18:09 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:18:19 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:18:29 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:18:39 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:18:49 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:18:59 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:19:09 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:19:19 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:19:29 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:19:39 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:19:49 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:19:59 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:20:09 │ INFO  │ Waiting for tokens and invites from the dashboard on port 5050
+2026-09-10 10:20:12 │ INFO  │ Engine Ready › Threads: 2 │ Tokens: 1 │ Invites: 60 │ Challenge handling: disabled
+2026-09-10 10:20:12 │ INFO  │ Engine Dispatcher › Operating in Fleet Mode
+2026-09-10 10:20:12 │ INFO  │ Fleet Dispatcher Ready › 1 thread(s) x 10 workers = 1 active │ Limit/Token: 33 │ Standby Tokens: 0 │ Pacing: 39-55s (~0.7m/token)
+2026-09-10 10:20:12 │ INFO  │ Fleet Threads › running 1 independent dispatcher(s), one per exit IP
+2026-09-10 10:20:12 │ INFO  │ T1 Dispatching › token=MjU1...zm1o │ target=discord.gg/S6YgWXrCxf │ joins=0/33
+2026-09-10 10:20:12 │ INFO  │ [Thread 1] Session active › proxy=direct │ token=MjU1...zm1o │ target=S6YgWXrCxf
+2026-09-10 10:20:13 │ INFO  │ [Thread 1] Detected connection timezone: Asia/Tbilisi
+2026-09-10 10:20:13 │ INFO  │ [Thread 1] Fingerprint acquired → 1547491645182836757.xLDZzqJ1Sj-eou9BOq3B5T_-wmI
+2026-09-10 10:20:14 │ ERROR │ [Thread 1] MjU1...zm1o → Invalid Token (HTTP 401)
+2026-09-10 10:20:14 │ INFO  │ Removed token MjU1...zm1o from input/tokens.txt
+2026-09-10 10:20:14 │ INFO  │ Queue Pacing › Next worker in 39.1s (individual token rest cooldown ~7.8m)
+2026-09-10 10:20:53 │ WARNING │ All Fleet workers have retired and standby token pool is exhausted.
+2026-09-10 10:20:53 │ INFO  │ Gateway cleanup › Closing all active WebSocket connections...
+2026-09-10 10:20:53 │ INFO  │ Session finished › All server join tasks completed or tokens exhausted!
+2026-09-10 10:20:53 │ INFO  │ Discord Bot & Dashboard › 24/7 online. Use /addtokens or /addinvites, then /restart to resume.
+2026-09-10 10:23:12 │ INFO  │ New dashboard queues detected; restarting the engine.
+2026-09-10 10:23:15 │ INFO  │ Dashboard Web › Listening on http://127.0.0.1:5050
+2026-09-10 10:23:15 │ INFO  │ Engine Ready › Threads: 2 │ Tokens: 1 │ Invites: 60 │ Challenge handling: disabled
+2026-09-10 10:23:15 │ INFO  │ Engine Dispatcher › Operating in Fleet Mode
+2026-09-10 10:23:15 │ INFO  │ Fleet Dispatcher Ready › 1 thread(s) x 10 workers = 1 active │ Limit/Token: 33 │ Standby Tokens: 0 │ Pacing: 39-55s (~0.7m/token)
+2026-09-10 10:23:15 │ INFO  │ Fleet Threads › running 1 independent dispatcher(s), one per exit IP
+2026-09-10 10:23:15 │ INFO  │ T1 Dispatching › token=MTM4...9SH4 │ target=discord.gg/S6YgWXrCxf │ joins=0/33
+2026-09-10 10:23:15 │ INFO  │ [Thread 1] Session active › proxy=direct │ token=MTM4...9SH4 │ target=S6YgWXrCxf
+2026-09-10 10:23:16 │ INFO  │ [Thread 1] Detected connection timezone: Asia/Tbilisi
+2026-09-10 10:23:16 │ INFO  │ [Thread 1] Fingerprint acquired → 1547492414330245152.yA0w4wOz26fJ2At8xANRt47Fjb0
+2026-09-10 10:23:19 │ INFO  │ [Thread 1] Initial presence warmup › warming presence for 87.9s (first time startup only)...
+2026-09-10 10:25:25 │ INFO  │ [Thread 1] MTM4...9SH4 → Joined (S6YgWXrCxf)
+2026-09-10 10:25:53 │ INFO  │ T1 Join Success › joins=1/33
+2026-09-10 10:25:53 │ INFO  │ Queue Pacing › Next worker in 51.9s (individual token rest cooldown ~7.8m)
+2026-09-10 10:26:35 │ WARNING │ Ctrl+C / termination signal received! Initiating graceful shutdown...
+2026-09-10 10:26:35 │ INFO  │ Finishing active tasks, no new tasks will be scheduled. Press Ctrl+C again to force exit.
+2026-09-10 10:26:35 │ INFO  │ Fleet dispatcher stopped by shutdown request.
+2026-09-10 10:26:35 │ INFO  │ Gateway cleanup › Closing all active WebSocket connections...
+2026-09-10 10:26:35 │ INFO  │ Session finished › All server join tasks completed or tokens exhausted!
+2026-09-10 10:26:35 │ INFO  │ Discord Bot & Dashboard › 24/7 online. Use /addtokens or /addinvites, then /restart to resume.
+2026-09-10 10:26:35 │ WARNING │ Force exiting immediately...
